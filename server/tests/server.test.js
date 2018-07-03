@@ -152,3 +152,46 @@ describe('DELETE /todos/:id', () => {
         .end(done);
     });
 });
+
+describe('PATCH /todos/:id', () => {
+    it('should update the todo doc', (done) => {
+      request(app)
+        .patch(`/todos/${todos[0]._id}`)
+        .send({text: 'bey update aho'})
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.todo.text).toBe('bey update aho');
+        })
+        .end((err, res) => {
+          if(err){
+            return done(err);
+          }
+
+          Todo.findById(todos[0]._id).then((todo) => {
+            expect(todo).toExist();
+            expect(todo.text).toBe('bey update aho');
+            done();
+          }, e => done(e));
+        });
+    });
+
+    it('should clear completedAt when todo is not completed', (done) => {
+      request(app)
+        .patch(`/todos/${todos[1]._id}`)
+        .send({completed: false})
+        .expect(200)
+        .end((err, res) => {
+          if(err){
+            return done(err);
+          }
+
+          Todo.findById(todos[1]._id).then((todo) => {
+            expect(todo).toExist();
+            expect(todo.completed).toBe(false);
+            expect(todo.completedAt).toNotExist();
+            done();
+          }, e => done(e));
+        });
+    });
+
+});
